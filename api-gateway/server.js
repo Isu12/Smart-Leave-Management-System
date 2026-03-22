@@ -14,6 +14,13 @@ app.get('/health', (req, res) => {
     res.status(200).json({ message: 'API Gateway is online and active' });
 });
 
+// Proxy Swagger Docs
+app.use('/api-docs', createProxyMiddleware({
+    target: process.env.AUTH_SERVICE_URL || 'http://localhost:5000',
+    changeOrigin: true,
+    pathRewrite: (path, req) => req.originalUrl,
+}));
+
 /**
  * Proxy Routes Configuration
  * `target` maps the route to the specific microservice.

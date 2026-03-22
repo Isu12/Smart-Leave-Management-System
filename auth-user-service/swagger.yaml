@@ -5,15 +5,17 @@ info:
   description: API documentation for the Auth and User microservice
 
 servers:
+  - url: http://localhost:4000/api
+    description: API Gateway (Routes to Auth Service)
   - url: http://localhost:5000
-    description: Development server
+    description: Direct Microservice Access (Internal/Dev only)
 
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
-      bearerFormat: JWT
+      bearerFormat: JWT+
 
   schemas:
     User:
