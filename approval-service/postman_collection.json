@@ -1,0 +1,42 @@
+{
+  "info": {
+    "name": "Approval Service",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Approval",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "http://localhost:5000/api/approvals",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "approvals"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"leaveId\": \"LV001\",\n  \"userId\": \"USER001\",\n  \"approverId\": \"MGR001\",\n  \"leaveType\": \"ANNUAL\",\n  \"startDate\": \"2026-03-25\",\n  \"endDate\": \"2026-03-27\",\n  \"totalDays\": 3,\n  \"reason\": \"Personal work\",\n  \"status\": \"PENDING\",\n  \"comment\": \"Initial approval request\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Get All Approvals",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:5000/api/approvals"
+      }
+    },
+    {
+      "name": "Get Pending Approvals",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:5000/api/approvals/pending"
+      }
+    }
+  ]
+}

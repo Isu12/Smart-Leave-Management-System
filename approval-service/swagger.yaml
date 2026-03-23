@@ -1,0 +1,133 @@
+openapi: 3.0.0
+info:
+  title: Approval Service API
+  version: 1.0.0
+  description: Approval microservice for Smart Leave Management System
+servers:
+  - url: http://localhost:5000
+paths:
+  /api/approvals:
+    post:
+      summary: Create a new approval record
+      tags: [Approvals]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApprovalInput'
+      responses:
+        '201':
+          description: Approval created successfully
+    get:
+      summary: Get all approvals
+      tags: [Approvals]
+      responses:
+        '200':
+          description: List of approvals
+  /api/approvals/pending:
+    get:
+      summary: Get all pending approvals
+      tags: [Approvals]
+      responses:
+        '200':
+          description: Pending approval list
+  /api/approvals/{id}:
+    get:
+      summary: Get approval by ID
+      tags: [Approvals]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Approval record
+        '404':
+          description: Approval not found
+    put:
+      summary: Update approval decision
+      tags: [Approvals]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [PENDING, APPROVED, REJECTED]
+                comment:
+                  type: string
+      responses:
+        '200':
+          description: Approval updated successfully
+    delete:
+      summary: Delete approval by ID
+      tags: [Approvals]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Approval deleted successfully
+components:
+  schemas:
+    ApprovalInput:
+      type: object
+      required:
+        - leaveId
+        - userId
+        - approverId
+        - leaveType
+        - startDate
+        - endDate
+        - totalDays
+        - reason
+      properties:
+        leaveId:
+          type: string
+          example: LV001
+        userId:
+          type: string
+          example: USER001
+        approverId:
+          type: string
+          example: MGR001
+        leaveType:
+          type: string
+          enum: [ANNUAL, CASUAL, MEDICAL, UNPAID]
+          example: ANNUAL
+        startDate:
+          type: string
+          format: date
+          example: 2026-03-25
+        endDate:
+          type: string
+          format: date
+          example: 2026-03-27
+        totalDays:
+          type: number
+          example: 3
+        reason:
+          type: string
+          example: Personal work
+        status:
+          type: string
+          enum: [PENDING, APPROVED, REJECTED]
+          example: PENDING
+        comment:
+          type: string
+          example: Waiting for manager review
