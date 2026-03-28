@@ -1,0 +1,8 @@
+{
+  "name": "@smart-leave/shared-middleware",
+  "private": true,
+  "type": "commonjs",
+  "dependencies": {
+    "jsonwebtoken": "^9.0.2"
+  }
+}

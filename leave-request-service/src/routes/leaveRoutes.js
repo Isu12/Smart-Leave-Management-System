@@ -1,7 +1,7 @@
 const express = require('express');
 const { applyLeave, listByUserId } = require('../controllers/leaveController');
-const authMiddleware = require('../middleware/authMiddleware');
-const roleMiddleware = require('../middleware/roleMiddleware');
+const authMiddleware = require('../../../shared/middleware/authMiddleware');
+const roleMiddleware = require('../../../shared/middleware/roleMiddleware');
 const selfOrManagerMiddleware = require('../middleware/selfOrManagerMiddleware');
 
 const router = express.Router();
