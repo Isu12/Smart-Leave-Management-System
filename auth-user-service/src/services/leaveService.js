@@ -3,12 +3,19 @@ const axios = require('axios');
 exports.checkApprovedLeave = async (userId) => {
     try {
         const leaveServiceUrl = process.env.LEAVE_SERVICE_URL || 'http://localhost:5001';
-        const response = await axios.get(`${leaveServiceUrl}/leaves/user/${userId}`);
+        const headers = {};
+        if (process.env.LEAVE_SERVICE_API_KEY) {
+            headers['X-Service-Key'] = process.env.LEAVE_SERVICE_API_KEY;
+        }
+        const response = await axios.get(`${leaveServiceUrl}/leaves/user/${userId}`, { headers });
+
+        const payload = response.data;
+        const leaves = Array.isArray(payload) ? payload : (payload.leaves || []);
 
         const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
         // Check if user has an APPROVED leave for today's date
-        const hasLeaveToday = response.data.some(leave => {
+        const hasLeaveToday = leaves.some(leave => {
             // Assuming leave has status, startDate, endDate
             if (leave.status !== 'APPROVED') return false;
 
