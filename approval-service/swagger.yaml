@@ -4,12 +4,14 @@ info:
   version: 1.0.0
   description: Approval microservice for Smart Leave Management System
 servers:
-  - url: http://localhost:5000
+  - url: http://localhost:5002
 paths:
   /api/approvals:
     post:
       summary: Create a new approval record
       tags: [Approvals]
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -22,6 +24,8 @@ paths:
     get:
       summary: Get all approvals
       tags: [Approvals]
+      security:
+        - bearerAuth: []
       responses:
         '200':
           description: List of approvals
@@ -29,6 +33,8 @@ paths:
     get:
       summary: Get all pending approvals
       tags: [Approvals]
+      security:
+        - bearerAuth: []
       responses:
         '200':
           description: Pending approval list
@@ -36,6 +42,8 @@ paths:
     get:
       summary: Get approval by ID
       tags: [Approvals]
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -50,6 +58,8 @@ paths:
     put:
       summary: Update approval decision
       tags: [Approvals]
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -74,6 +84,8 @@ paths:
     delete:
       summary: Delete approval by ID
       tags: [Approvals]
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -84,6 +96,11 @@ paths:
         '200':
           description: Approval deleted successfully
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     ApprovalInput:
       type: object
