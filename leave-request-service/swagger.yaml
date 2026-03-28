@@ -1,0 +1,259 @@
+openapi: 3.0.3
+info:
+  title: Leave Request Service API
+  version: 1.0.0
+  description: |
+    Submit and retrieve leave requests. Overlap with existing PENDING or APPROVED
+    requests for the same user is rejected (409).
+
+    All endpoints require a JWT from the Auth & User Service (`Authorization: Bearer <token>`).
+    EMPLOYEE may only apply for or list their own `userId`; MANAGER may act for any user.
+
+servers:
+  - url: /
+    description: This service (same origin as /api-docs; use with any PORT)
+  - url: http://localhost:5001
+    description: Direct when the app listens on 5001
+  - url: http://localhost:8080/api
+    description: API Gateway (example base path)
+
+tags:
+  - name: Leave
+    description: Apply and list leave requests
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    serviceKey:
+      type: apiKey
+      in: header
+      name: X-Service-Key
+      description: Shared secret for trusted services (same as SERVICE_API_KEY); alternative to bearer on GET /leaves/user/{userId}
+
+  schemas:
+    LeaveType:
+      type: string
+      enum: [ANNUAL, SICK, CASUAL, MATERNITY, OTHER]
+    LeaveStatus:
+      type: string
+      enum: [PENDING, APPROVED, REJECTED, CANCELLED]
+    LeaveRequest:
+      type: object
+      properties:
+        _id:
+          type: string
+        userId:
+          type: string
+          description: User identifier (same as User Service)
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        leaveType:
+          $ref: '#/components/schemas/LeaveType'
+        reason:
+          type: string
+        status:
+          $ref: '#/components/schemas/LeaveStatus'
+        numberOfDays:
+          type: integer
+          description: Inclusive calendar days from start to end
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ApplyLeaveBody:
+      type: object
+      required:
+        - userId
+        - startDate
+        - endDate
+      properties:
+        userId:
+          type: string
+          example: "507f1f77bcf86cd799439011"
+        startDate:
+          type: string
+          format: date
+          example: "2026-04-01"
+        endDate:
+          type: string
+          format: date
+          example: "2026-04-05"
+        leaveType:
+          $ref: '#/components/schemas/LeaveType'
+        reason:
+          type: string
+          example: "Family event"
+    SuccessApply:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/LeaveRequest'
+    SuccessList:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        count:
+          type: integer
+        leaves:
+          type: array
+          items:
+            $ref: '#/components/schemas/LeaveRequest'
+    ErrorMessage:
+      type: object
+      properties:
+        message:
+          type: string
+
+paths:
+  /leave/apply:
+    post:
+      tags:
+        - Leave
+      summary: Apply for leave
+      operationId: applyLeave
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplyLeaveBody'
+      responses:
+        '201':
+          description: Leave request created (PENDING)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessApply'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '401':
+          description: Missing or invalid JWT
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: EMPLOYEE cannot apply for another user's userId
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '409':
+          description: Overlapping leave for same user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+
+  /leave/{userId}:
+    get:
+      tags:
+        - Leave
+      summary: List leave requests for a user
+      operationId: listLeaveByUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Leave requests (newest first)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessList'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '401':
+          description: Missing or invalid JWT
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: EMPLOYEE cannot list another user's leaves
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Not found (e.g. reserved path segment)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+
+  /leaves/user/{userId}:
+    get:
+      tags:
+        - Leave
+      summary: List leave requests (compat path for gateway / other services)
+      operationId: listLeaveByUserCompat
+      security:
+        - bearerAuth: []
+        - serviceKey: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Leave requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessList'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '401':
+          description: Missing or invalid JWT
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: EMPLOYEE cannot list another user's leaves
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
