@@ -12,8 +12,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Serve Swagger Docs
 const swaggerDocument = YAML.load(path.join(__dirname, '../swagger.yaml'));
+
+// Expose Swagger spec for API Gateway aggregation
+app.get('/api-spec', (req, res) => {
+  res.json(swaggerDocument);
+});
+
+// Serve Swagger Docs
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use('/auth', authRoutes);

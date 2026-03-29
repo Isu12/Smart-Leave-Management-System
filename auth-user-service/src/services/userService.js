@@ -1,14 +1,14 @@
 const User = require('../models/User');
+const { createUserAccount } = require('./authService');
 
+/**
+ * Manager-only: create a user account with an explicit role.
+ * Uses the same validation + password hashing as self-registration.
+ * If no role is provided, defaults to EMPLOYEE.
+ */
 exports.createUser = async (userData) => {
-    const userExists = await User.findOne({ email: userData.email });
-    if (userExists) {
-        throw new Error('User already exists');
-    }
-
-    const user = new User(userData);
-    await user.save();
-    return user;
+    const allowedRole = ['EMPLOYEE', 'MANAGER'].includes(userData.role) ? userData.role : 'EMPLOYEE';
+    return await createUserAccount(userData, allowedRole);
 };
 
 exports.getUsers = async () => {

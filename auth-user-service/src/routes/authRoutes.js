@@ -9,6 +9,7 @@ const router = express.Router();
  *   post:
  *     summary: Register a new user
  *     tags: [Auth]
+ *     description: Registers a new user account. Role is always set to EMPLOYEE — use POST /users (Manager only) to create accounts with the MANAGER role.
  *     requestBody:
  *       required: true
  *       content:
@@ -26,12 +27,10 @@ const router = express.Router();
  *                 type: string
  *               password:
  *                 type: string
- *               role:
- *                 type: string
- *                 enum: [EMPLOYEE, MANAGER]
+ *                 description: Min 8 chars, must include uppercase, number and special character
  *     responses:
  *       201:
- *         description: Created
+ *         description: Created (role is always EMPLOYEE)
  *       400:
  *         description: Bad request (validation errors or user exists)
  */

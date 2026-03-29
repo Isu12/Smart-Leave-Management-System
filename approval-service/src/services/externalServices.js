@@ -1,17 +1,17 @@
 const axios = require('axios');
 
 const leaveClient = axios.create({
-  baseURL: process.env.LEAVE_SERVICE_URL || 'http://localhost:5002',
+  baseURL: process.env.LEAVE_SERVICE_URL || 'http://localhost:5003', // leave-request-service
   timeout: 5000
 });
 
 const userClient = axios.create({
-  baseURL: process.env.AUTH_USER_SERVICE_URL || 'http://localhost:5001',
+  baseURL: process.env.AUTH_USER_SERVICE_URL || 'http://localhost:5000', // auth-user-service
   timeout: 5000
 });
 
 const balanceClient = axios.create({
-  baseURL: process.env.LEAVE_BALANCE_SERVICE_URL || 'http://localhost:5004',
+  baseURL: process.env.LEAVE_BALANCE_SERVICE_URL || 'http://localhost:5001', // leave-balance-reporting-service
   timeout: 5000
 });
 

@@ -10,22 +10,22 @@ const balanceController = require('../controllers/balanceController');
 
 const { protect, authorize } = require('../middleware/authMiddleware');
 
-// CREATE a new leave balance (Admin/Manager only)
-router.post('/', protect, authorize('Manager', 'Admin'), balanceController.createBalance);
+// CREATE a new leave balance (Manager only)
+router.post('/', protect, authorize('MANAGER'), balanceController.createBalance);
 
-// DEDUCT leave (Usually an internal service call, protected by Manager or Admin logic)
-router.post('/deduct', protect, authorize('Manager', 'Admin', 'Service'), balanceController.deductLeave);
+// DEDUCT leave (Manager only – triggered after approval)
+router.post('/deduct', protect, authorize('MANAGER'), balanceController.deductLeave);
 
-// GET all leave balances (Managers/Admins only)
-router.get('/', protect, authorize('Manager', 'Admin'), balanceController.getAllBalances);
+// GET all leave balances (Managers only)
+router.get('/', protect, authorize('MANAGER'), balanceController.getAllBalances);
 
-// GET a specific user's leave balance (Anyone logged in can check their own)
+// GET a specific user's leave balance (Anyone logged in)
 router.get('/:userId', protect, balanceController.getBalanceByUserId);
 
-// UPDATE a user's leave balance (Admin/Manager only)
-router.put('/:userId', protect, authorize('Manager', 'Admin'), balanceController.updateBalance);
+// UPDATE a user's leave balance (Manager only)
+router.put('/:userId', protect, authorize('MANAGER'), balanceController.updateBalance);
 
-// DELETE a user's leave balance (Admin/Manager only)
-router.delete('/:userId', protect, authorize('Manager', 'Admin'), balanceController.deleteBalance);
+// DELETE a user's leave balance (Manager only)
+router.delete('/:userId', protect, authorize('MANAGER'), balanceController.deleteBalance);
 
 module.exports = router;

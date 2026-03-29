@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
+const morgan = require('morgan');
 const YAML = require('yamljs');
+const path = require('path');
 const swaggerUi = require('swagger-ui-express');
 const approvalRoutes = require('./routes/approvalRoutes');
 const errorHandler = require('./middleware/errorHandler');
@@ -8,19 +10,27 @@ const errorHandler = require('./middleware/errorHandler');
 const app = express();
 
 app.use(cors());
+app.use(morgan('dev'));
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.json({
+// Health check
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
     service: 'Approval Service',
-    status: 'Running',
     docs: '/api-docs'
   });
 });
 
 app.use('/api/approvals', approvalRoutes);
 
-const swaggerDocument = YAML.load('./swagger.yaml');
+const swaggerDocument = YAML.load(path.join(__dirname, '../swagger.yaml'));
+
+// Expose Swagger spec for API Gateway aggregation
+app.get('/api-spec', (req, res) => {
+  res.json(swaggerDocument);
+});
+
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use(errorHandler);
