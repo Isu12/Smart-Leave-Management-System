@@ -23,3 +23,17 @@ exports.listByUserId = async (req, res, next) => {
         next(error);
     }
 };
+
+exports.cancelLeave = async (req, res, next) => {
+    try {
+        const { leaveId } = req.params;
+        const { id: userId, role } = req.user;
+        const doc = await leaveService.cancelLeave(leaveId, userId, role);
+        res.status(200).json({ success: true, data: doc });
+    } catch (error) {
+        if (error.status) {
+            res.status(error.status);
+        }
+        next(error);
+    }
+};
