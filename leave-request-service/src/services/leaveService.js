@@ -69,3 +69,29 @@ exports.listLeaveRequestsByUserId = async (userId) => {
         .sort({ startDate: -1 })
         .lean();
 };
+
+exports.cancelLeave = async (leaveId, userId, role) => {
+    if (!leaveId) {
+        throw validationError('leaveId is required');
+    }
+
+    const leave = await LeaveRequest.findById(leaveId);
+    if (!leave) {
+        throw validationError('Leave request not found', 404);
+    }
+
+    // Role check: Only the owner or a MANAGER can cancel
+    if (role !== 'MANAGER' && String(leave.userId) !== String(userId)) {
+        throw validationError('Access denied: insufficient permissions', 403);
+    }
+
+    // Status check: Only PENDING can be cancelled
+    if (leave.status !== 'PENDING') {
+        throw validationError('Only pending leave requests can be cancelled', 400);
+    }
+
+    leave.status = 'CANCELLED';
+    await leave.save();
+
+    return leave;
+};

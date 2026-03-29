@@ -1,5 +1,5 @@
 const express = require('express');
-const { applyLeave, listByUserId } = require('../controllers/leaveController');
+const { applyLeave, listByUserId, cancelLeave } = require('../controllers/leaveController');
 const authMiddleware = require('../../../shared/middleware/authMiddleware');
 const roleMiddleware = require('../../../shared/middleware/roleMiddleware');
 const selfOrManagerMiddleware = require('../middleware/selfOrManagerMiddleware');
@@ -30,6 +30,12 @@ router.get(
     roleMiddleware(['EMPLOYEE', 'MANAGER']),
     selfOrManagerMiddleware((req) => req.params.userId),
     listByUserId
+);
+
+router.patch(
+    '/:leaveId/cancel',
+    roleMiddleware(['EMPLOYEE', 'MANAGER']),
+    cancelLeave
 );
 
 module.exports = router;

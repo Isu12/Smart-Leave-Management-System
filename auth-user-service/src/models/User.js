@@ -5,7 +5,15 @@ const userSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: { type: String, enum: ['EMPLOYEE', 'MANAGER'], default: 'EMPLOYEE' },
-    leaveBalance: { type: Number, default: 14 },
+    employmentType: { 
+        type: String, 
+        enum: ['INTERN', 'CONTRACT', 'PERMANENT'], 
+        required: [true, 'Employment type is required'] 
+    },
+    leavePolicyId: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'LeavePolicy' 
+    },
     isActive: { type: Boolean, default: true },
     lastLogin: { type: Date },
     loginCount: { type: Number, default: 0 }

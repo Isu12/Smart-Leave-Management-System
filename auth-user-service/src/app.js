@@ -3,6 +3,7 @@ const cors = require('cors');
 const errorHandler = require('./middleware/errorHandler');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
+const policyRoutes = require('./routes/policyRoutes');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 const path = require('path');
@@ -24,6 +25,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
+app.use('/api/policies', policyRoutes);
 
 app.use(errorHandler);
 

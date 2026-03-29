@@ -2,6 +2,7 @@ const authService = require('../services/authService');
 
 exports.register = async (req, res, next) => {
     try {
+        // req.body should contain name, email, password, and employmentType
         const user = await authService.registerUser(req.body);
         res.status(201).json({ success: true, user });
     } catch (error) {

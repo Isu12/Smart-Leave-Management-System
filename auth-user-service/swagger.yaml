@@ -30,8 +30,11 @@ components:
         role:
           type: string
           enum: [EMPLOYEE, MANAGER]
-        leaveBalance:
-          type: integer
+        employmentType:
+          type: string
+          enum: [INTERN, CONTRACT, PERMANENT]
+        leavePolicyId:
+          type: string
         isActive:
           type: boolean
         lastLogin:
@@ -39,6 +42,39 @@ components:
           format: date-time
         loginCount:
           type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    LeavePolicy:
+      type: object
+      required:
+        - name
+        - employmentType
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        employmentType:
+          type: string
+          enum: [INTERN, CONTRACT, PERMANENT]
+        leaveQuota:
+          type: object
+          properties:
+            annual:
+              type: integer
+            sick:
+              type: integer
+            casual:
+              type: integer
+        maxConsecutiveDays:
+          type: integer
+        carryForward:
+          type: boolean
         createdAt:
           type: string
           format: date-time
@@ -62,6 +98,7 @@ paths:
                 - name
                 - email
                 - password
+                - employmentType
               properties:
                 name:
                   type: string
@@ -69,14 +106,14 @@ paths:
                   type: string
                 password:
                   type: string
-                role:
+                employmentType:
                   type: string
-                  enum: [EMPLOYEE, MANAGER]
+                  enum: [INTERN, CONTRACT, PERMANENT]
       responses:
         '201':
           description: Created
         '400':
-          description: Bad request (validation errors or user exists)
+          description: Bad request (validation errors, user exists, or policy missing)
 
   /auth/login:
     post:
@@ -177,3 +214,70 @@ paths:
       responses:
         '200':
           description: Successfully soft-deleted
+
+  /api/policies:
+    get:
+      summary: Get all leave policies (Managers only)
+      tags:
+        - Policies
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a leave policy (Managers only)
+      tags:
+        - Policies
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeavePolicy'
+      responses:
+        '201':
+          description: Success
+
+  /api/policies/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Get policy by ID (Managers only)
+      tags:
+        - Policies
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: Update policy (Managers only)
+      tags:
+        - Policies
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeavePolicy'
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: Delete policy (Managers only)
+      tags:
+        - Policies
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Success

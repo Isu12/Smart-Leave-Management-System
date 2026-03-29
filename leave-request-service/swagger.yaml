@@ -257,3 +257,50 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorMessage'
+
+  /leave/{leaveId}/cancel:
+    patch:
+      tags:
+        - Leave
+      summary: Cancel a pending leave request
+      operationId: cancelLeave
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: leaveId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the leave request to cancel
+      responses:
+        '200':
+          description: Leave request cancelled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessApply'
+        '400':
+          description: Only pending leave requests can be cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '401':
+          description: Missing or invalid JWT
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: Access denied (not owner or manager)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Leave request not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
