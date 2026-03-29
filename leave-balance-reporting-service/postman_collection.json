@@ -1,0 +1,183 @@
+{
+  "info": {
+    "name": "Leave Balance & Reporting Service",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Database Seed (Prerequisite)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5001/health",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5001",
+          "path": ["health"]
+        },
+        "description": "Ensure your server is alive and seeding is done using `node seed.js`."
+      }
+    },
+    {
+      "name": "2. Balance Operations",
+      "item": [
+        {
+          "name": "Create Leave Balance",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"userId\": \"NEW_EMP_01\",\n    \"employeeName\": \"Test User\",\n    \"totalAllocated\": 14,\n    \"usedLeave\": 0,\n    \"department\": \"IT\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5001/api/balance",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "balance"]
+            }
+          }
+        },
+        {
+          "name": "Get All Balances",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5001/api/balance",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "balance"]
+            }
+          }
+        },
+        {
+          "name": "Get Balance By User ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5001/api/balance/EMP001",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "balance", "EMP001"]
+            }
+          }
+        },
+        {
+          "name": "Update Balance",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"totalAllocated\": 25\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5001/api/balance/EMP001",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "balance", "EMP001"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Leave Deductions",
+      "item": [
+        {
+          "name": "Deduct Approved Leave",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"userId\": \"EMP001\",\n    \"employeeName\": \"Nimal Perera\",\n    \"leaveRequestId\": \"LR_TEST_999\",\n    \"leaveType\": \"Annual\",\n    \"startDate\": \"2026-05-10\",\n    \"endDate\": \"2026-05-12\",\n    \"numberOfDays\": 2,\n    \"approvedBy\": \"MAN001\",\n    \"approvedDate\": \"2026-05-09\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5001/api/balance/deduct",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "balance", "deduct"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Reporting",
+      "item": [
+        {
+          "name": "Get User Full History Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5001/api/reports/user/EMP001",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "reports", "user", "EMP001"]
+            }
+          }
+        },
+        {
+          "name": "Get User Monthly Aggregation Summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5001/api/reports/monthly/EMP003",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "reports", "monthly", "EMP003"]
+            }
+          }
+        },
+        {
+          "name": "Get Top Leave Users Leaderboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5004/api/reports/top-leave-users?limit=3",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5004",
+              "path": ["api", "reports", "top-leave-users"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "3"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
