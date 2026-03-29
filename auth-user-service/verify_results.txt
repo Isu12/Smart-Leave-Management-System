@@ -1,0 +1,12 @@
+Connected to MongoDB
+--- 1. Creating Leave Policy ---
+Policy created/updated: Standard Intern Policy
+
+--- 2. Registering User ---
+User registered successfully
+User employmentType: INTERN
+User leavePolicyId: 69c942bb58c7d3ee101deb08
+
+--- 3. Verifying in Database ---
+Verification SUCCESS: User assigned to correct policy
+MongoDB connection closed
