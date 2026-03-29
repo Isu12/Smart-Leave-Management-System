@@ -33,8 +33,14 @@ app.get('/health', (req, res) => {
 app.use('/api/balance', balanceRoutes);
 app.use('/api/reports', reportRoutes);
 
-// 4. Swagger UI Documentation
 const swaggerDocument = YAML.load(path.join(__dirname, '../swagger.yaml'));
+
+// Expose Swagger spec for API Gateway aggregation
+app.get('/api-spec', (req, res) => {
+  res.json(swaggerDocument);
+});
+
+// 4. Swagger UI Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // 4. Global Error Handler

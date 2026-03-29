@@ -52,6 +52,7 @@ router.use(authMiddleware);
  *         description: Success
  *   post:
  *     summary: Create a user (Managers only)
+ *     description: Creates a new user account. Managers may specify EMPLOYEE or MANAGER role. Defaults to EMPLOYEE if omitted. Password is validated and hashed using the same rules as self-registration.
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
@@ -60,10 +61,28 @@ router.use(authMiddleware);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/User'
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - password
+ *             properties:
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *                 description: Min 8 chars, must include uppercase, number and special character
+ *               role:
+ *                 type: string
+ *                 enum: [EMPLOYEE, MANAGER]
+ *                 description: Defaults to EMPLOYEE if not specified
  *     responses:
  *       201:
  *         description: User created
+ *       400:
+ *         description: Validation error or user already exists
  */
 router.route('/')
     .post(roleMiddleware(['MANAGER']), createUser)

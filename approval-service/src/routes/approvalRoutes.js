@@ -1,7 +1,7 @@
 const express = require('express');
 const controller = require('../controllers/approvalController');
-const roleMiddleware = require('../middleware/roleMiddleware');
-const authMiddleware = require('../middleware/authMiddleware');
+const roleMiddleware = require('../../../shared/middleware/roleMiddleware');
+const authMiddleware = require('../../../shared/middleware/authMiddleware');
 
 const router = express.Router();
 

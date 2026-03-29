@@ -1,0 +1,559 @@
+openapi: 3.0.0
+info:
+  title: Smart Leave Management System – API Gateway
+  description: |
+    Unified API documentation for all microservices routed through the API Gateway (port 4000).
+
+    **All requests must go through port 4000.**
+
+    | Service | Internal Port |
+    |---|---|
+    | Auth & User Service | 5000 |
+    | Leave Balance & Reporting Service | 5001 |
+    | Approval Service | 5002 |
+    | Leave Request Service | 5003 |
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:4000
+    description: API Gateway (local)
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    RegisterRequest:
+      type: object
+      required: [name, email, password]
+      properties:
+        name:
+          type: string
+          example: Jane Doe
+        email:
+          type: string
+          format: email
+          example: jane@example.com
+        password:
+          type: string
+          example: Secret@123
+          description: Min 8 chars, must include uppercase, number and special character
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: jane@example.com
+        password:
+          type: string
+          example: Secret@123
+
+    CreateUserRequest:
+      type: object
+      required: [name, email, password]
+      properties:
+        name:
+          type: string
+          example: John Smith
+        email:
+          type: string
+          format: email
+          example: john@example.com
+        password:
+          type: string
+          example: Manager@123
+        role:
+          type: string
+          enum: [EMPLOYEE, MANAGER]
+          default: EMPLOYEE
+          description: Defaults to EMPLOYEE if not specified
+
+    LeaveRequest:
+      type: object
+      required: [userId, startDate, endDate, leaveType]
+      properties:
+        userId:
+          type: string
+          example: 64abc1234def567890
+        startDate:
+          type: string
+          format: date
+          example: "2026-04-10"
+        endDate:
+          type: string
+          format: date
+          example: "2026-04-12"
+        leaveType:
+          type: string
+          enum: [ANNUAL, SICK, CASUAL, MATERNITY, OTHER]
+          default: ANNUAL
+        reason:
+          type: string
+          example: Family vacation
+
+    ApprovalRequest:
+      type: object
+      required: [leaveId, userId, approverId, leaveType, startDate, endDate, totalDays, reason]
+      properties:
+        leaveId:
+          type: string
+          example: 64abc1234def567890
+        userId:
+          type: string
+          example: 64abc1234def567891
+        approverId:
+          type: string
+          example: 64abc1234def567892
+        leaveType:
+          type: string
+          enum: [ANNUAL, CASUAL, MEDICAL, UNPAID]
+        startDate:
+          type: string
+          format: date
+          example: "2026-04-10"
+        endDate:
+          type: string
+          format: date
+          example: "2026-04-12"
+        totalDays:
+          type: number
+          example: 3
+        reason:
+          type: string
+          example: Family vacation
+        status:
+          type: string
+          enum: [PENDING, APPROVED, REJECTED]
+          default: PENDING
+        comment:
+          type: string
+          example: ""
+
+    BalanceRequest:
+      type: object
+      required: [userId, employeeName]
+      properties:
+        userId:
+          type: string
+          example: 64abc1234def567890
+        employeeName:
+          type: string
+          example: Jane Doe
+        totalAllocated:
+          type: number
+          default: 14
+          example: 14
+        usedLeave:
+          type: number
+          default: 0
+          example: 0
+        department:
+          type: string
+          example: Engineering
+        role:
+          type: string
+          example: EMPLOYEE
+
+tags:
+  - name: Auth
+    description: Register and login
+  - name: Users
+    description: User management (MANAGER only for create/delete)
+  - name: Leave Requests
+    description: Submit and view leave requests
+  - name: Approvals
+    description: Leave approval workflow (MANAGER only to create/update)
+  - name: Leave Balance
+    description: Leave balance tracking
+  - name: Reports
+    description: Leave usage reports
+
+paths:
+  # ─────────────────────────────────────────
+  # AUTH
+  # ─────────────────────────────────────────
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Register (always creates EMPLOYEE)
+      description: Self-registration. Role is always EMPLOYEE — Managers use POST /api/users to create MANAGER accounts.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User registered successfully
+        '400':
+          description: Validation error or email already exists
+
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login and receive JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful – copy the token from response and click Authorize above
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  token:
+                    type: string
+                  user:
+                    type: object
+        '401':
+          description: Invalid credentials
+        '403':
+          description: Access denied – user is currently on approved leave
+
+  # ─────────────────────────────────────────
+  # USERS
+  # ─────────────────────────────────────────
+  /api/users:
+    get:
+      tags: [Users]
+      summary: Get all active users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of users
+        '401':
+          description: Unauthorized
+    post:
+      tags: [Users]
+      summary: Create a user (MANAGER only – can set any role)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: User created
+        '400':
+          description: Validation error or user already exists
+        '403':
+          description: Forbidden – MANAGER role required
+
+  /api/users/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        description: User MongoDB ObjectId
+    get:
+      tags: [Users]
+      summary: Get user by ID
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User found
+        '404':
+          description: User not found
+    put:
+      tags: [Users]
+      summary: Update user by ID (MANAGER only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        '200':
+          description: Updated
+    delete:
+      tags: [Users]
+      summary: Soft-delete user (MANAGER only)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Soft-deleted
+
+  # ─────────────────────────────────────────
+  # LEAVE REQUESTS
+  # ─────────────────────────────────────────
+  /api/leaves/apply:
+    post:
+      tags: [Leave Requests]
+      summary: Apply for leave
+      description: Submits a leave request. numberOfDays is calculated automatically from startDate and endDate.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeaveRequest'
+      responses:
+        '201':
+          description: Leave request submitted (status = PENDING)
+        '409':
+          description: Overlapping leave request exists
+
+  /api/leaves/{userId}:
+    get:
+      tags: [Leave Requests]
+      summary: Get leave requests for a user
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+          description: User MongoDB ObjectId
+      responses:
+        '200':
+          description: List of leave requests for this user
+
+  # ─────────────────────────────────────────
+  # APPROVALS
+  # ─────────────────────────────────────────
+  /api/approvals/pending:
+    get:
+      tags: [Approvals]
+      summary: Get all PENDING approvals (MANAGER only)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of pending approvals
+
+  /api/approvals:
+    get:
+      tags: [Approvals]
+      summary: Get all approvals
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: All approval records
+    post:
+      tags: [Approvals]
+      summary: Create an approval record (MANAGER only)
+      description: Creates a linked approval record for an existing leave request.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApprovalRequest'
+      responses:
+        '201':
+          description: Approval created
+
+  /api/approvals/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        description: Approval MongoDB ObjectId
+    get:
+      tags: [Approvals]
+      summary: Get approval by ID
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Approval record
+        '404':
+          description: Not found
+    put:
+      tags: [Approvals]
+      summary: Update approval decision (MANAGER only)
+      description: |
+        Set status to APPROVED or REJECTED.
+        When APPROVED: the leave request status is synced, the user's leave balance is deducted, and the balance service is updated.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [APPROVED, REJECTED]
+                comment:
+                  type: string
+      responses:
+        '200':
+          description: Updated
+    delete:
+      tags: [Approvals]
+      summary: Delete approval (MANAGER only)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Deleted
+
+  # ─────────────────────────────────────────
+  # LEAVE BALANCE
+  # ─────────────────────────────────────────
+  /api/balances:
+    get:
+      tags: [Leave Balance]
+      summary: Get all leave balances (MANAGER only)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of all leave balances
+    post:
+      tags: [Leave Balance]
+      summary: Create a leave balance record for a user (MANAGER only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BalanceRequest'
+      responses:
+        '201':
+          description: Balance created
+        '409':
+          description: Balance already exists for this user
+
+  /api/balances/{userId}:
+    parameters:
+      - in: path
+        name: userId
+        required: true
+        schema:
+          type: string
+    get:
+      tags: [Leave Balance]
+      summary: Get leave balance for a user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Leave balance
+        '404':
+          description: Not found
+    put:
+      tags: [Leave Balance]
+      summary: Update leave balance (MANAGER only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                totalAllocated:
+                  type: number
+                usedLeave:
+                  type: number
+                employeeName:
+                  type: string
+      responses:
+        '200':
+          description: Updated
+    delete:
+      tags: [Leave Balance]
+      summary: Delete leave balance record (MANAGER only)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Deleted
+
+  # ─────────────────────────────────────────
+  # REPORTS
+  # ─────────────────────────────────────────
+  /api/reports/user/{userId}:
+    get:
+      tags: [Reports]
+      summary: Get leave usage report for a user
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User leave report
+        '404':
+          description: Not found
+
+  /api/reports/monthly/{userId}:
+    get:
+      tags: [Reports]
+      summary: Get monthly leave usage summary for a user (MANAGER only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Monthly summary
+
+  /api/reports/top-leave-users:
+    get:
+      tags: [Reports]
+      summary: Get top leave users (MANAGER only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+          description: Number of top users to return
+      responses:
+        '200':
+          description: Top users list

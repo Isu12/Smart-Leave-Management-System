@@ -11,8 +11,15 @@ const validatePassword = (password) => {
     return minLength && hasUpperCase && hasNumber && hasSpecialChar;
 };
 
-exports.registerUser = async (userData) => {
-    const { name, email, password, role } = userData;
+/**
+ * Shared account creation logic used by both self-registration and manager-created users.
+ * @param {object} userData - { name, email, password, role? }
+ * @param {string} [forcedRole] - When supplied, overrides any role in userData (used by managers).
+ *                               When omitted, defaults to 'EMPLOYEE'.
+ */
+exports.createUserAccount = async (userData, forcedRole) => {
+    const { name, email, password } = userData;
+    const role = forcedRole || 'EMPLOYEE';
 
     if (!validatePassword(password)) {
         throw new Error('Password must be at least 8 characters long, contain an uppercase letter, a number, and a special character.');
@@ -42,6 +49,13 @@ exports.registerUser = async (userData) => {
     };
 };
 
+/**
+ * Public self-registration – role is always EMPLOYEE regardless of request body.
+ */
+exports.registerUser = async (userData) => {
+    return exports.createUserAccount(userData, 'EMPLOYEE');
+};
+
 exports.loginUser = async (email, password) => {
     const user = await User.findOne({ email });
     if (!user || !user.isActive) {
@@ -53,7 +67,7 @@ exports.loginUser = async (email, password) => {
         throw new Error('Invalid credentials');
     }
 
-    // 3. Leave-Aware Login Check
+    // Leave-Aware Login Check
     const isOnLeave = await checkApprovedLeave(user._id);
     if (isOnLeave) {
         throw new Error('Access denied. You are on leave');
