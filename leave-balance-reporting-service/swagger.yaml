@@ -1,0 +1,178 @@
+openapi: 3.0.0
+info:
+  title: Leave Balance & Reporting Service API
+  description: Microservice exclusively managing employee leave balances, handling deductions from Approval endpoints, and generating analytical usage reports. Includes strict Role-Based Access Control (RBAC).
+  version: 1.0.0
+servers:
+  - url: http://localhost:5001
+    description: Local Development Server
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []
+paths:
+  /api/balance:
+    get:
+      summary: Retrieve all leave balances (Manager/Admin)
+      tags:
+        - Balance Configuration
+      responses:
+        '200':
+          description: Successfully retrieved all balances
+    post:
+      summary: Create a new leave balance (Manager/Admin)
+      tags:
+        - Balance Configuration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId: { type: string, example: "EMP001" }
+                employeeName: { type: string, example: "Nuwan Silva" }
+                totalAllocated: { type: integer, example: 14 }
+                usedLeave: { type: integer, example: 0 }
+                department: { type: string, example: "Engineering" }
+                role: { type: string, example: "Employee" }
+      responses:
+        '201':
+          description: Successfully created leave balance
+        '400':
+          description: Missing required fields
+        '403':
+          description: Forbidden (Invalid Role)
+  /api/balance/{userId}:
+    get:
+      summary: Get specific leave balance (Authenticated Users)
+      tags:
+        - Balance Configuration
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Successfully retrieved balance
+        '401':
+          description: Unauthorized
+        '404':
+          description: Balance not found
+    put:
+      summary: Manually update specific balance parameters (Manager/Admin)
+      tags:
+        - Balance Configuration
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                totalAllocated: { type: integer, example: 20 }
+                usedLeave: { type: integer, example: 5 }
+      responses:
+        '200':
+          description: Updated successfully
+        '403':
+          description: Forbidden
+        '404':
+          description: Balance not found
+    delete:
+      summary: Delete a leave balance record (Manager/Admin)
+      tags:
+        - Balance Configuration
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Deleted successfully
+        '403':
+          description: Forbidden
+  /api/balance/deduct:
+    post:
+      summary: Deduct approved leave automatically (Service/Manager API)
+      description: Triggered purely by the external Approval Service. Does strict mathematical checks to prevent duplicate deductions or falling into negative balances.
+      tags:
+        - Inter-Service Actions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId: { type: string, example: "EMP001" }
+                employeeName: { type: string, example: "Nuwan Silva" }
+                leaveRequestId: { type: string, example: "LR1001" }
+                leaveType: { type: string, example: "Annual" }
+                startDate: { type: string, format: date, example: "2026-03-10" }
+                endDate: { type: string, format: date, example: "2026-03-12" }
+                numberOfDays: { type: number, example: 3 }
+                approvedBy: { type: string, example: "MAN001" }
+                approvedDate: { type: string, format: date, example: "2026-03-09" }
+      responses:
+        '200':
+          description: Deducted successfully and logged.
+        '400':
+          description: Insufficient balance.
+        '409':
+          description: Duplicate leave request.
+  /api/reports/user/{userId}:
+    get:
+      summary: Get full leave history for user (Authenticated Users)
+      tags:
+        - Reporting
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Success
+        '401':
+          description: Unauthorized
+  /api/reports/monthly/{userId}:
+    get:
+      summary: Get an aggregated monthly usage summary (Manager/Admin)
+      tags:
+        - Reporting
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Success
+        '403':
+          description: Forbidden
+  /api/reports/top-leave-users:
+    get:
+      summary: Get leaderboard of highest leave users (Manager/Admin)
+      tags:
+        - Reporting
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 10 }
+      responses:
+        '200':
+          description: Success
+        '403':
+          description: Forbidden
