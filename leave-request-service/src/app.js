@@ -28,6 +28,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use('/api/leave', leaveRoutes);
 app.use('/api/leaves', leavesCompatRoutes);
+app.use('/api/leaves', leaveRoutes); // Fallback to main leave routes for plural prefix
 
 app.use(errorHandler);
 

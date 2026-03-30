@@ -7,7 +7,7 @@ exports.checkApprovedLeave = async (userId) => {
         if (process.env.LEAVE_SERVICE_API_KEY) {
             headers['X-Service-Key'] = process.env.LEAVE_SERVICE_API_KEY;
         }
-        const response = await axios.get(`${leaveServiceUrl}/leaves/user/${userId}`, { headers });
+        const response = await axios.get(`${leaveServiceUrl}/api/leaves/user/${userId}`, { headers });
 
         const payload = response.data;
         const leaves = Array.isArray(payload) ? payload : (payload.leaves || []);
