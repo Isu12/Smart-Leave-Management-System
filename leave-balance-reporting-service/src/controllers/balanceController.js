@@ -31,7 +31,7 @@ const createBalance = async (req, res) => {
 const deductLeave = async (req, res) => {
   try {
     const data = req.body;
-    if (!data.userId || !data.leaveRequestId || !data.numberOfDays || !data.startDate) {
+    if (!data.userId || !data.leaveRequestId || !data.numberOfDays || !data.startDate || !data.leaveType) {
       return res.status(400).json({ success: false, message: 'Missing required deduction fields' });
     }
 
