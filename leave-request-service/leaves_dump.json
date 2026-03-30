@@ -1,0 +1,28 @@
+[
+  {
+    "_id": "69c77a63b35b1108e6a366ec",
+    "userId": "69c009a095cc59821a64484a",
+    "startDate": "2026-04-01T00:00:00.000Z",
+    "endDate": "2026-04-05T00:00:00.000Z",
+    "leaveType": "ANNUAL",
+    "reason": "Family event",
+    "status": "PENDING",
+    "numberOfDays": 5,
+    "createdAt": "2026-03-28T06:51:15.361Z",
+    "updatedAt": "2026-03-28T06:51:15.361Z",
+    "__v": 0
+  },
+  {
+    "_id": "69c77cbbc1ee243a45d8eb54",
+    "userId": "69c00ce195cc59821a64484d",
+    "startDate": "2026-04-10T00:00:00.000Z",
+    "endDate": "2026-04-11T00:00:00.000Z",
+    "leaveType": "ANNUAL",
+    "reason": "I have racing event",
+    "status": "PENDING",
+    "numberOfDays": 2,
+    "createdAt": "2026-03-28T07:01:15.259Z",
+    "updatedAt": "2026-03-28T07:01:15.259Z",
+    "__v": 0
+  }
+]

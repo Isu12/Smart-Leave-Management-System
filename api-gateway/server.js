@@ -84,16 +84,20 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(gatewaySwaggerSpec, swagge
 // Route to Auth & User Service (port 5000)
 // /api/auth -> /auth
 app.use('/api/auth', createProxyMiddleware({
-    target: (process.env.AUTH_SERVICE_URL || 'http://localhost:5000') + '/auth',
+    target: (process.env.AUTH_SERVICE_URL || 'http://localhost:5010') + '/api/auth',
     changeOrigin: true,
-    pathRewrite: { '^/': '' }, // Remove the slash if needed, but usually not necessary
 }));
 
 // /api/users -> /users
 app.use('/api/users', createProxyMiddleware({
-    target: (process.env.AUTH_SERVICE_URL || 'http://localhost:5000') + '/users',
+    target: (process.env.AUTH_SERVICE_URL || 'http://localhost:5010') + '/api/users',
     changeOrigin: true,
-    pathRewrite: { '^/': '' },
+}));
+
+// /api/policies -> /api/policies
+app.use('/api/policies', createProxyMiddleware({
+    target: (process.env.AUTH_SERVICE_URL || 'http://localhost:5010') + '/api/policies',
+    changeOrigin: true,
 }));
 
 // Route to Leave Balance & Reporting Service (port 5001)
@@ -101,14 +105,12 @@ app.use('/api/users', createProxyMiddleware({
 app.use('/api/balances', createProxyMiddleware({
     target: (process.env.LEAVE_BALANCE_SERVICE_URL || 'http://localhost:5001') + '/api/balance',
     changeOrigin: true,
-    pathRewrite: { '^/': '' },
 }));
 
 // /api/reports -> /api/reports
 app.use('/api/reports', createProxyMiddleware({
     target: (process.env.LEAVE_BALANCE_SERVICE_URL || 'http://localhost:5001') + '/api/reports',
     changeOrigin: true,
-    pathRewrite: { '^/': '' },
 }));
 
 // Route to Approval Service (port 5002)
@@ -116,15 +118,13 @@ app.use('/api/reports', createProxyMiddleware({
 app.use('/api/approvals', createProxyMiddleware({
     target: (process.env.APPROVAL_SERVICE_URL || 'http://localhost:5002') + '/api/approvals',
     changeOrigin: true,
-    pathRewrite: { '^/': '' },
 }));
 
 // Route to Leave Request Service (port 5003)
 // /api/leaves -> /leave
 app.use('/api/leaves', createProxyMiddleware({
-    target: (process.env.LEAVE_REQUEST_SERVICE_URL || 'http://localhost:5003') + '/leave',
+    target: (process.env.LEAVE_REQUEST_SERVICE_URL || 'http://localhost:5003') + '/api/leaves',
     changeOrigin: true,
-    pathRewrite: { '^/': '' },
 }));
 
 const PORT = process.env.PORT || 4000;
@@ -132,10 +132,11 @@ const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
     console.log(`🚀 API Gateway running successfully on Port ${PORT}`);
     console.log(`Routes mapped:`);
-    console.log(` - /api/auth      -> Auth & User Service (5000)`);
-    console.log(` - /api/users     -> Auth & User Service (5000)`);
+    console.log(` - /api/auth      -> Auth & User Service (5010) [/api/auth]`);
+    console.log(` - /api/users     -> Auth & User Service (5010) [/api/users]`);
+    console.log(` - /api/policies  -> Auth & User Service (5010) [/api/policies]`);
     console.log(` - /api/balances  -> Leave Balance & Reporting Service (5001) [/api/balance]`);
     console.log(` - /api/reports   -> Leave Balance & Reporting Service (5001) [/api/reports]`);
-    console.log(` - /api/approvals -> Approval Service (5002)`);
-    console.log(` - /api/leaves    -> Leave Request Service (5003) [/leave]`);
+    console.log(` - /api/approvals -> Approval Service (5002) [/api/approvals]`);
+    console.log(` - /api/leaves    -> Leave Request Service (5003) [/api/leaves]`);
 });

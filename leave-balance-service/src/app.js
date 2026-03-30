@@ -5,21 +5,18 @@
  */
 
 const express = require('express');
-const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
 
 // Middleware
-app.use(cors());
 app.use(express.json());
 
-// Routes will be imported here
-// const balanceRoutes = require('./routes/balanceRoutes');
-// const reportRoutes = require('./routes/reportRoutes');
+const balanceRoutes = require('./routes/balanceRoutes.js');
+const reportRoutes = require('./routes/reportRoutes.js');
 
-// app.use('/api/balance', balanceRoutes);
-// app.use('/api/reports', reportRoutes);
+app.use('/api/balance', balanceRoutes);
+app.use('/api/reports', reportRoutes);
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', service: 'Leave Balance & Reporting Service' });

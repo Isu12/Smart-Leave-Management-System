@@ -5,7 +5,6 @@
  */
 
 const express = require('express');
-const cors = require('cors');
 const morgan = require('morgan');
 require('dotenv').config();
 
@@ -20,7 +19,6 @@ const path = require('path');
 const app = express();
 
 // 1. Global Middleware
-app.use(cors()); // Allow cross-origin requests from other microservices or frontends
 app.use(morgan('dev')); // Log incoming HTTP requests cleanly to the console
 app.use(express.json()); // Parse incoming JSON payloads in req.body automatically
 

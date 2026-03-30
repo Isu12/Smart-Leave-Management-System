@@ -1,5 +1,5 @@
 const express = require('express');
-const { applyLeave, listByUserId, cancelLeave } = require('../controllers/leaveController');
+const { applyLeave, listByUserId, cancelLeave, updateLeave, deleteLeave } = require('../controllers/leaveController');
 const authMiddleware = require('../../../shared/middleware/authMiddleware');
 const roleMiddleware = require('../../../shared/middleware/roleMiddleware');
 const selfOrManagerMiddleware = require('../middleware/selfOrManagerMiddleware');
@@ -36,6 +36,18 @@ router.patch(
     '/:leaveId/cancel',
     roleMiddleware(['EMPLOYEE', 'MANAGER']),
     cancelLeave
+);
+
+router.put(
+    '/:leaveId',
+    roleMiddleware(['EMPLOYEE', 'MANAGER']),
+    updateLeave
+);
+
+router.delete(
+    '/:leaveId',
+    roleMiddleware(['EMPLOYEE', 'MANAGER']),
+    deleteLeave
 );
 
 module.exports = router;
