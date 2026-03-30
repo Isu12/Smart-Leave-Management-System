@@ -1,0 +1,10 @@
+[2026-03-30T16:35:17.497Z] [APPROVAL-SERVICE] Received createApproval for leave test-leave-id
+[2026-03-30T16:35:17.681Z] [APPROVAL-SERVICE] Successfully created approval 69caa645269f668b40fbe393
+[2026-03-30T16:37:26.203Z] [APPROVAL-SERVICE] Received createApproval for leave 69caa6c67827f29a57985dc6
+[2026-03-30T16:37:26.337Z] [APPROVAL-SERVICE] Successfully created approval 69caa6c637b6544acb51fc5b
+[2026-03-30T16:38:07.386Z] [APPROVAL-SERVICE] Received createApproval for leave 69caa6ef7827f29a57985dca
+[2026-03-30T16:38:07.488Z] [APPROVAL-SERVICE] Successfully created approval 69caa6ef37b6544acb51fc60
+[2026-03-30T16:38:48.421Z] [APPROVAL-SERVICE] Received createApproval for leave 69caa718c2378cf8eec7b1bd
+[2026-03-30T16:38:48.643Z] [APPROVAL-SERVICE] Successfully created approval 69caa718735053c4e0f64de6
+[2026-03-30T16:46:04.391Z] [APPROVAL-SERVICE] Received createApproval for leave 69ca916102a26567f60702fd
+[2026-03-30T16:46:04.590Z] [APPROVAL-SERVICE] Successfully created approval 69caa8ccff14554e924922b9

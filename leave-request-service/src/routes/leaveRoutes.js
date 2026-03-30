@@ -50,4 +50,14 @@ router.delete(
     deleteLeave
 );
 
+router.put(
+    '/:leaveId/status',
+    roleMiddleware(['MANAGER']),
+    (req, res, next) => {
+        // Here we could add logic to ensure ONLY the approval service or a manager can call this
+        next();
+    },
+    require('../controllers/leaveController').updateLeaveStatus
+);
+
 module.exports = router;

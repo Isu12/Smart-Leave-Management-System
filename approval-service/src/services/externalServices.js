@@ -25,9 +25,11 @@ const getLeaveById = async (leaveId) => {
   }
 };
 
-const updateLeaveStatus = async (leaveId, payload) => {
+const updateLeaveStatus = async (leaveId, payload, token) => {
   try {
-    const response = await leaveClient.put(`/api/leaves/${leaveId}/status`, payload);
+    const response = await leaveClient.put(`/api/leaves/${leaveId}/status`, payload, {
+      headers: { Authorization: token }
+    });
     return response.data;
   } catch (error) {
     console.warn(`Failed to update leave status: ${leaveId}`);
@@ -45,9 +47,11 @@ const getUserById = async (userId) => {
   }
 };
 
-const updateUserLeaveBalance = async (userId, payload) => {
+const updateUserLeaveBalance = async (userId, payload, token) => {
   try {
-    const response = await userClient.put(`/api/users/${userId}`, payload);
+    const response = await userClient.put(`/api/users/${userId}`, payload, {
+      headers: { Authorization: token }
+    });
     return response.data;
   } catch (error) {
     console.warn(`Failed to update user balance: ${userId}`);
@@ -55,9 +59,11 @@ const updateUserLeaveBalance = async (userId, payload) => {
   }
 };
 
-const updateBalanceService = async (userId, payload) => {
+const updateBalanceService = async (userId, payload, token) => {
   try {
-    const response = await balanceClient.put(`/api/balance/${userId}`, payload);
+    const response = await balanceClient.put(`/api/balance/${userId}`, payload, {
+      headers: { Authorization: token }
+    });
     return response.data;
   } catch (error) {
     console.warn(`Balance service unavailable: ${userId}`);
