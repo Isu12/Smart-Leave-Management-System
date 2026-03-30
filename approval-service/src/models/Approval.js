@@ -14,12 +14,11 @@ const approvalSchema = new mongoose.Schema(
     },
     approverId: {
       type: String,
-      required: true,
       trim: true
     },
     leaveType: {
       type: String,
-      enum: ['ANNUAL', 'CASUAL', 'MEDICAL', 'UNPAID'],
+      enum: ['ANNUAL', 'SICK', 'CASUAL', 'MATERNITY', 'MEDICAL', 'UNPAID', 'OTHER'],
       required: true
     },
     startDate: {

@@ -304,3 +304,62 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorMessage'
+  /leave/{leaveId}:
+    put:
+      tags:
+        - Leave
+      summary: Update a pending leave request
+      operationId: updateLeave
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: leaveId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the leave request to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplyLeaveBody'
+      responses:
+        '200':
+          description: Leave request updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessApply'
+        '400':
+          description: Only pending leave requests can be edited
+        '403':
+          description: Access denied (not owner or manager)
+        '404':
+          description: Leave request not found
+        '409':
+          description: Overlapping leave for same user
+    delete:
+      tags:
+        - Leave
+      summary: Delete a pending leave request
+      operationId: deleteLeave
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: leaveId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the leave request to delete
+      responses:
+        '200':
+          description: Leave request deleted successfully
+        '400':
+          description: Only pending leave requests can be deleted
+        '403':
+          description: Access denied (not owner or manager)
+        '404':
+          description: Leave request not found

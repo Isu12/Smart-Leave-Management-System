@@ -38,8 +38,18 @@ const validateApprovalRules = async (approvalData) => {
 };
 
 const createApproval = async (approvalData) => {
-  await validateApprovalRules(approvalData);
-  return await Approval.create(approvalData);
+  const fs = require('fs');
+  const logFile = 'd:\\MTIT assignment 2\\Smart-Leave-Management-System\\debug.log';
+  fs.appendFileSync(logFile, `[${new Date().toISOString()}] [APPROVAL-SERVICE] Received createApproval for leave ${approvalData.leaveId}\n`);
+  try {
+    await validateApprovalRules(approvalData);
+    const approval = await Approval.create(approvalData);
+    fs.appendFileSync(logFile, `[${new Date().toISOString()}] [APPROVAL-SERVICE] Successfully created approval ${approval._id}\n`);
+    return approval;
+  } catch (err) {
+    fs.appendFileSync(logFile, `[${new Date().toISOString()}] [APPROVAL-SERVICE] Failed to create approval: ${err.message}\n`);
+    throw err;
+  }
 };
 
 const getAllApprovals = async () =>
@@ -54,7 +64,7 @@ const getApprovalById = async (id) => {
 const getPendingApprovals = async () =>
   Approval.find({ status: 'PENDING' }).sort({ createdAt: -1 });
 
-const updateApproval = async (id, updateData) => {
+const updateApproval = async (id, updateData, token) => {
   const existingApproval = await Approval.findById(id);
   if (!existingApproval) throw new Error('Approval not found');
 
@@ -80,19 +90,19 @@ const updateApproval = async (id, updateData) => {
     await updateLeaveStatus(existingApproval.leaveId, {
       status: 'APPROVED',
       approvedBy: existingApproval.approverId
-    });
+    }, token);
 
     if (user) {
       await updateUserLeaveBalance(existingApproval.userId, {
         leaveBalance: newBalance
-      });
+      }, token);
     }
 
     await updateBalanceService(existingApproval.userId, {
       deductedDays: existingApproval.totalDays,
       leaveType: existingApproval.leaveType,
       action: 'DEDUCT'
-    });
+    }, token);
 
     existingApproval.status = 'APPROVED';
     existingApproval.reviewedAt = new Date();
@@ -102,7 +112,7 @@ const updateApproval = async (id, updateData) => {
     await updateLeaveStatus(existingApproval.leaveId, {
       status: 'REJECTED',
       approvedBy: existingApproval.approverId
-    });
+    }, token);
 
     existingApproval.status = 'REJECTED';
     existingApproval.reviewedAt = new Date();

@@ -1,5 +1,4 @@
 const express = require('express');
-const cors = require('cors');
 const path = require('path');
 const morgan = require('morgan');
 const swaggerUi = require('swagger-ui-express');
@@ -10,7 +9,6 @@ const leavesCompatRoutes = require('./routes/leavesCompatRoutes');
 
 const app = express();
 
-app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 
@@ -28,8 +26,9 @@ app.get('/api-spec', (req, res) => {
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-app.use('/leave', leaveRoutes);
-app.use('/leaves', leavesCompatRoutes);
+app.use('/api/leave', leaveRoutes);
+app.use('/api/leaves', leavesCompatRoutes);
+app.use('/api/leaves', leaveRoutes); // Fallback to main leave routes for plural prefix
 
 app.use(errorHandler);
 

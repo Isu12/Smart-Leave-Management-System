@@ -64,7 +64,8 @@ const getPendingApprovals = async (req, res, next) => {
 
 const updateApproval = async (req, res, next) => {
   try {
-    const approval = await approvalService.updateApproval(req.params.id, req.body);
+    const token = req.headers.authorization;
+    const approval = await approvalService.updateApproval(req.params.id, req.body, token);
 
     if (!approval) {
       return res.status(404).json({

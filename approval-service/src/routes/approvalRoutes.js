@@ -83,7 +83,7 @@ router.route('/pending')
  *         description: List of approvals
  */
 router.route('/')
-    .post(roleMiddleware(['MANAGER']), controller.createApproval)
+    .post(roleMiddleware(['MANAGER', 'EMPLOYEE']), controller.createApproval)
     .get(roleMiddleware(['MANAGER', 'EMPLOYEE']), controller.getAllApprovals); // Example: both can view
 
 /**

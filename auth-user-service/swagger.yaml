@@ -1,12 +1,12 @@
 openapi: 3.0.0
 info:
   title: Auth & User Service API
-  version: 1.0.0
+  version: 1.0.1
   description: API documentation for the Auth and User microservice
 
 servers:
-  - url: http://localhost:4000/api
-    description: API Gateway (Routes to Auth Service)
+  - url: http://localhost:4001
+    description: API Gateway (Direct Access)
   - url: http://localhost:5000
     description: Direct Microservice Access (Internal/Dev only)
 
@@ -83,7 +83,7 @@ components:
           format: date-time
 
 paths:
-  /auth/register:
+  /api/auth/register:
     post:
       summary: Register a new user
       tags:
@@ -115,7 +115,7 @@ paths:
         '400':
           description: Bad request (validation errors, user exists, or policy missing)
 
-  /auth/login:
+  /api/auth/login:
     post:
       summary: Log in to the application
       tags:
@@ -142,7 +142,7 @@ paths:
         '403':
           description: Access denied (User on leave)
 
-  /users:
+  /api/users:
     get:
       summary: Get all active users
       tags:
@@ -168,7 +168,7 @@ paths:
         '201':
           description: User created
 
-  /users/{id}:
+  /api/users/{id}:
     parameters:
       - in: path
         name: id

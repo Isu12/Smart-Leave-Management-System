@@ -18,7 +18,7 @@ const leaveRequestSchema = new mongoose.Schema(
     },
     leaveType: {
       type: String,
-      enum: ['ANNUAL', 'SICK', 'CASUAL', 'MATERNITY', 'OTHER'],
+      enum: ['ANNUAL', 'SICK', 'CASUAL', 'MATERNITY', 'MEDICAL', 'UNPAID', 'OTHER'],
       default: 'ANNUAL',
     },
     reason: {
