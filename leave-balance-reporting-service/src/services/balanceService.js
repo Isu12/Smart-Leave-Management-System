@@ -14,12 +14,26 @@ const createBalance = async (data) => {
     throw new Error('Leave balance already exists for this user');
   }
 
-  // Explicit Math: Calculate remaining leave clearly
-  const remainingLeave = data.totalAllocated - data.usedLeave;
+  // Initialize balances per leave type
+  const balances = data.balances || {
+    annual: { allocated: 0, used: 0, remaining: 0 },
+    sick: { allocated: 0, used: 0, remaining: 0 },
+    casual: { allocated: 0, used: 0, remaining: 0 }
+  };
+
+  // Ensure remaining is calculated correctly
+  for (const type of ['annual', 'sick', 'casual']) {
+    if (balances[type]) {
+      balances[type].remaining = (balances[type].allocated || 0) - (balances[type].used || 0);
+    }
+  }
 
   const newBalance = new LeaveBalance({
-    ...data,
-    remainingLeave: remainingLeave
+    userId: data.userId,
+    employeeName: data.employeeName,
+    department: data.department,
+    role: data.role,
+    balances
   });
 
   return await newBalance.save();
@@ -39,14 +53,24 @@ const deductLeave = async (data) => {
     throw new Error('Leave balance not found for user');
   }
 
-  // Step C: Check if they have enough leaves left
-  if (balance.remainingLeave < data.numberOfDays) {
-    throw new Error('Not enough remaining leave balance');
+  // Step C: Check if they have enough leaves left for the specific type
+  const type = (data.leaveType || '').toLowerCase();
+  
+  // Basic validation that the type exists
+  if (!['annual', 'sick', 'casual'].includes(type) || !balance.balances || !balance.balances[type]) {
+    throw new Error(`Invalid or unsupported leave type: ${data.leaveType}`);
   }
 
-  // Step D: Do the math explicitly (Easy to explain in a Viva)
-  balance.usedLeave = balance.usedLeave + data.numberOfDays;
-  balance.remainingLeave = balance.totalAllocated - balance.usedLeave;
+  if (balance.balances[type].remaining < data.numberOfDays) {
+    throw new Error(`Not enough remaining ${data.leaveType} leave balance`);
+  }
+
+  // Step D: Do the math explicitly for the specific leave type
+  balance.balances[type].used += data.numberOfDays;
+  balance.balances[type].remaining = balance.balances[type].allocated - balance.balances[type].used;
+  
+  // Tell mongoose the nested object changed
+  balance.markModified('balances');
 
   // Step E: Extract the string '03' and number '2026' from the startDate "2026-03-10"
   const startDateObj = new Date(data.startDate);
@@ -87,19 +111,55 @@ const getBalanceByUserId = async (userId) => {
   return balance;
 };
 
-// 5. Update Balance (e.g., admin giving more total allocated leaves)
+// 5. Update Balance (e.g., admin giving more total allocated leaves or handling deductions)
 const updateBalance = async (userId, updateData) => {
   const balance = await LeaveBalance.findOne({ userId });
   if (!balance) throw new Error('Leave balance not found');
 
   // Update provided fields
-  if (updateData.totalAllocated !== undefined) balance.totalAllocated = updateData.totalAllocated;
-  if (updateData.usedLeave !== undefined) balance.usedLeave = updateData.usedLeave;
   if (updateData.employeeName !== undefined) balance.employeeName = updateData.employeeName;
 
+  // Handle deduction explicitly
+  if (updateData.action === 'DEDUCT') {
+    const type = (updateData.leaveType || '').toLowerCase();
+    
+    if (!['annual', 'sick', 'casual'].includes(type) || !balance.balances || !balance.balances[type]) {
+      throw new Error(`Invalid or unsupported leave type: ${updateData.leaveType}`);
+    }
+
+    if (balance.balances[type].remaining < updateData.deductedDays) {
+      throw new Error(`Not enough remaining ${updateData.leaveType} leave balance`);
+    }
+
+    balance.balances[type].used += updateData.deductedDays;
+  }
+
+  // Handle admin overriding entire balances
+  if (updateData.balances) {
+    for (const type of ['annual', 'sick', 'casual']) {
+       if (updateData.balances[type]) {
+         if (updateData.balances[type].allocated !== undefined) {
+           balance.balances[type].allocated = updateData.balances[type].allocated;
+         }
+         if (updateData.balances[type].used !== undefined) {
+           balance.balances[type].used = updateData.balances[type].used;
+         }
+       }
+    }
+  }
+
   // Recalculate remaining leave explicitly again!
-  balance.remainingLeave = balance.totalAllocated - balance.usedLeave;
-  if (balance.remainingLeave < 0) throw new Error('Remaining leave cannot be negative');
+  for (const type of ['annual', 'sick', 'casual']) {
+    if (balance.balances[type]) {
+      balance.balances[type].remaining = balance.balances[type].allocated - balance.balances[type].used;
+      if (balance.balances[type].remaining < 0) {
+        throw new Error(`Remaining ${type} leave cannot be negative`);
+      }
+    }
+  }
+  
+  // Inform mongoose that the nested objects have changed
+  balance.markModified('balances');
 
   return await balance.save();
 };

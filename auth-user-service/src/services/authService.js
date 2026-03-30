@@ -58,10 +58,23 @@ exports.createUserAccount = async (userData, forcedRole) => {
     // Initialize Leave Balance (Requirement #5)
     try {
         const balanceServiceUrl = process.env.LEAVE_BALANCE_SERVICE_URL || 'http://localhost:5001';
-        await axios.post(`${balanceServiceUrl}/api/balance/init`, {
+        
+        // Generate a temporary MANAGER token for service-to-service call
+        const systemToken = jwt.sign({ id: 'system', role: 'MANAGER' }, process.env.JWT_SECRET, { expiresIn: '5m' });
+        
+        await axios.post(`${balanceServiceUrl}/api/balance/`, {
             userId: user._id,
-            leaveQuota: policy.leaveQuota
+            employeeName: user.name,
+            role: user.role,
+            balances: {
+                annual: { allocated: policy.leaveQuota.annual || 0, used: 0, remaining: policy.leaveQuota.annual || 0 },
+                sick: { allocated: policy.leaveQuota.sick || 0, used: 0, remaining: policy.leaveQuota.sick || 0 },
+                casual: { allocated: policy.leaveQuota.casual || 0, used: 0, remaining: policy.leaveQuota.casual || 0 }
+            }
+        }, {
+            headers: { Authorization: `Bearer ${systemToken}` }
         });
+        
         console.log(`Initialized leave balance for user: ${user._id}`);
     } catch (error) {
         console.error(`Warning: Failed to initialize leave balance for user ${user._id}: ${error.message}. Continuing...`);
