@@ -1,5 +1,5 @@
 const express = require('express');
-const { createUser, getUsers, getUser, updateUser, deleteUser } = require('../controllers/userController');
+const { createUser, getUsers, getUser, updateUser, deleteUser, updateDepartment, getUsersByDepartment } = require('../controllers/userController');
 const authMiddleware = require('../../../shared/middleware/authMiddleware');
 const roleMiddleware = require('../../../shared/middleware/roleMiddleware');
 
@@ -138,5 +138,9 @@ router.route('/:id')
     .get(roleMiddleware(['MANAGER', 'EMPLOYEE']), getUser)
     .put(roleMiddleware(['MANAGER']), updateUser)
     .delete(roleMiddleware(['MANAGER']), deleteUser);
+
+// Department-related routes
+router.put('/:id/department', roleMiddleware(['MANAGER']), updateDepartment);
+router.get('/department/:departmentId', roleMiddleware(['MANAGER', 'EMPLOYEE']), getUsersByDepartment);
 
 module.exports = router;

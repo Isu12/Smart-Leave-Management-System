@@ -12,6 +12,7 @@ info:
     | Leave Balance & Reporting Service | 5001 |
     | Approval Service | 5002 |
     | Leave Request Service | 5003 |
+    | Department Service | 5004 |
   version: 1.0.1
 
 servers:
@@ -212,6 +213,8 @@ tags:
     description: Leave usage reports
   - name: Policies
     description: Leave policy management (MANAGER only)
+  - name: Departments
+    description: Department management and user assignment (MANAGER only for sensitive routes)
 
 paths:
   # ─────────────────────────────────────────
@@ -731,6 +734,113 @@ paths:
     delete:
       tags: [Policies]
       summary: Delete policy (MANAGER only)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Success
+
+  # ─────────────────────────────────────────
+  # DEPARTMENTS
+  # ─────────────────────────────────────────
+  /api/departments:
+    get:
+      tags: [Departments]
+      summary: Get all departments
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of departments
+    post:
+      tags: [Departments]
+      summary: Create a department (MANAGER only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+                description: { type: string }
+      responses:
+        '201':
+          description: Created
+
+  /api/departments/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    get:
+      tags: [Departments]
+      summary: Get department by ID
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Success
+    put:
+      tags: [Departments]
+      summary: Update department (MANAGER only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                description: { type: string }
+      responses:
+        '200':
+          description: Updated
+    delete:
+      tags: [Departments]
+      summary: Delete department (MANAGER only)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Deleted
+        '400':
+          description: Cannot delete department with assigned users
+
+  /api/departments/{id}/assign-user/{userId}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+      - in: path
+        name: userId
+        required: true
+        schema: { type: string }
+    put:
+      tags: [Departments]
+      summary: Assign user to department (MANAGER only)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Success
+
+  /api/departments/{id}/users:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    get:
+      tags: [Departments]
+      summary: Get users in department
       security:
         - bearerAuth: []
       responses:
