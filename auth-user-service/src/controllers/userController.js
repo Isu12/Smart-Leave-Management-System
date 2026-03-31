@@ -60,3 +60,27 @@ exports.deleteUser = async (req, res, next) => {
         next(error);
     }
 };
+
+exports.updateDepartment = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { departmentId } = req.body;
+        const user = await userService.updateUserDepartment(id, departmentId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        res.status(200).json({ success: true, user });
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.getUsersByDepartment = async (req, res, next) => {
+    try {
+        const { departmentId } = req.params;
+        const users = await userService.getUsersByDepartment(departmentId);
+        res.status(200).json({ success: true, count: users.length, users });
+    } catch (error) {
+        next(error);
+    }
+};

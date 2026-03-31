@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'LeavePolicy' 
     },
+    departmentId: { type: String, default: null },
     isActive: { type: Boolean, default: true },
     lastLogin: { type: Date },
     loginCount: { type: Number, default: 0 }

@@ -31,3 +31,11 @@ exports.updateUser = async (id, updateData) => {
 exports.softDeleteUser = async (id) => {
     return await User.findByIdAndUpdate(id, { isActive: false }, { new: true });
 };
+
+exports.updateUserDepartment = async (userId, departmentId) => {
+    return await User.findByIdAndUpdate(userId, { departmentId }, { new: true });
+};
+
+exports.getUsersByDepartment = async (departmentId) => {
+    return await User.find({ departmentId, isActive: true }).select('-password');
+};

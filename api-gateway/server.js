@@ -31,7 +31,8 @@ const swaggerOptions = {
             { url: '/specs/auth', name: 'Auth & User Service' },
             { url: '/specs/balance', name: 'Leave Balance & Reporting Service' },
             { url: '/specs/approval', name: 'Approval Service' },
-            { url: '/specs/leave', name: 'Leave Request Service' }
+            { url: '/specs/leave', name: 'Leave Request Service' },
+            { url: '/specs/department', name: 'Department Service' }
         ]
     }
 };
@@ -68,6 +69,13 @@ app.use(createProxyMiddleware({
     target: process.env.LEAVE_REQUEST_SERVICE_URL || 'http://localhost:5003',
     changeOrigin: true,
     pathRewrite: { '^/specs/leave': '/api-spec' }
+}));
+
+app.use(createProxyMiddleware({
+    pathFilter: '/specs/department',
+    target: process.env.DEPARTMENT_SERVICE_URL || 'http://localhost:5004',
+    changeOrigin: true,
+    pathRewrite: { '^/specs/department': '/api-spec' }
 }));
 
 // Host the main Swagger UI at /api-docs
@@ -127,6 +135,13 @@ app.use('/api/leaves', createProxyMiddleware({
     changeOrigin: true,
 }));
 
+// Route to Department Service (port 5004)
+// /api/departments -> /api/departments
+app.use('/api/departments', createProxyMiddleware({
+    target: (process.env.DEPARTMENT_SERVICE_URL || 'http://localhost:5004') + '/api/departments',
+    changeOrigin: true,
+}));
+
 const PORT = process.env.PORT || 4000;
 
 app.listen(PORT, () => {
@@ -139,4 +154,5 @@ app.listen(PORT, () => {
     console.log(` - /api/reports   -> Leave Balance & Reporting Service (5001) [/api/reports]`);
     console.log(` - /api/approvals -> Approval Service (5002) [/api/approvals]`);
     console.log(` - /api/leaves    -> Leave Request Service (5003) [/api/leaves]`);
+    console.log(` - /api/departments -> Department Service (5004) [/api/departments]`);
 });
